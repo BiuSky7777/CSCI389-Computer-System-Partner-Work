@@ -11,7 +11,16 @@ Collaboration: Kaiyan Shi, Jiarong Li
 ## Cache Structure
 We built a cache object with the data structure of an unordered map `{key: (value, size)}`. The Cache obect will be initialized by taking in 4 variables, `maxmem`, `max_load_factor`, `evictor`, `hasher`. We set the mamximal memoery to `maxmem` (sum of the size of all keys < `maxmem`), overwrite the maximal ratio of the size of the map and its number of buckets to `max_load_factor`, use evictor object as our eviction policy, and replace the default hash function for the unordered map by `hasher`. We chose unordered map because unordered containers organize their elements using hash tables that allow for fast access to elements by their key. Without the extra runtime for probing, all operations run in asymptotic constant time: O(1).
 
-An evictor object was given a data structure of queue, which contributes to a convinient implementation of out eviction policy: when the user wants to add a new key with size that cannot be contained in current cache, the cache automatically deletes from old keys in stead of recently added ones. Thus, we set `touch_key()` function to, whenever `set()` or `get()` is called, the corresponding key is added to the end of `myqueue`. And the function `evict()` pops out front elements of `myqueue`. 
+An evictor object was given a data structure of queue, which contributes to a convinient implementation of out eviction policy: when the user wants to add a new key with size that cannot be contained in current cache, the cache automatically deletes from old keys in stead of recently added ones. Thus, we set `touch_key()` function to, whenever `set()` or `get()` is called, the corresponding key is added to the end of `myqueue`. And the function `evict()` pops out front elements of `myqueue`. More specific details can be shwon in the following example. We have a cache with maxmem of 10, and store 5 keys with size of 2 in it. When we try to put a 6th key of size 2, the cache automatically deleted the first added key.
+```
+valcopy: 0x7feecb402d50 // 1st key
+valcopy: 0x7feecb402e10
+valcopy: 0x7feecb402ce0
+valcopy: 0x7feecb402ed0
+valcopy: 0x7feecb402f80 
+valcopy: 0x7feecb402fd0 // 6th key
+del val: 0x7feecb402d50 // 1st key is deleted 
+```
 
 
 ## Testing
