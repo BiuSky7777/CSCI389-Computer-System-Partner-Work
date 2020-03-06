@@ -36,17 +36,6 @@ int test_set_and_space_used()
 	c.set(key4, val4, size4);
 	assert(c.space_used() == size+size2+size4);
 
-	// unsigned n = c.umap_.bucket_count();
-	//
-	// std::cout << "my map has " << n << " buckets.\n";
-	//
-	// for (unsigned i=0; i<n; ++i) {
-	// 	std::cout << "bucket #" << i << " contains: ";
-	// 	for (auto it = c.umap_.begin(i); it!=c.umap_.end(i); ++it)
-	// 		std::cout << "[" << it->first << ":" << it->second << "] ";
-	// 	std::cout << "\n";
-	// }
-
 	cout << "Set Test Passed." << "\n";
 	cout << '\n';
 	return 0;
