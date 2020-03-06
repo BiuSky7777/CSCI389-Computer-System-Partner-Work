@@ -27,6 +27,7 @@ class Cache::Impl {
 
 public:
 
+  // constructor: inticialize umap with customized hash function and initialize max load factor
   Impl(size_type maxmem, float max_load_factor, Evictor* evictor, hash_func hasher) :
    maxmem_(maxmem), fifo_evictor(evictor), memused_(0), umap_(unordered_map<key_type,Element,hash_func>(0,hasher_)), max_load_factor_(max_load_factor), hasher_(hasher) {
     umap_.max_load_factor(max_load_factor_);
@@ -39,11 +40,12 @@ public:
       return;
     }
 
-    auto valcopy = new byte_type[size]; //memory copy of the value
+    // Deep copy the value
+    auto valcopy = new byte_type[size];
     std::copy(val, val + size, valcopy);
 
     Element key_pair;
-    key_pair.val = val;
+    key_pair.val = valcopy;
     key_pair.size = size;
 
     if(size <= maxmem_){
@@ -57,7 +59,7 @@ public:
         if (search != umap_.end()) {
             //overwrite
             memused_ -= (search -> second).size;
-            (search -> second).val = val;
+            (search -> second).val = valcopy;
             (search -> second).size = size;
             memused_ += size;
             fifo_evictor->touch_key(key);
@@ -96,9 +98,10 @@ public:
   {
     auto search = umap_.find(key);
     if (search != umap_.end()) {
-        val_type val = (search -> second).val;
+        // if found, delete corresponding key and its pair in the Cache
+        val_type valcopy = (search -> second).val;
         size_type size = (search -> second).size;
-        delete[] val;
+        delete[] valcopy;
         umap_.erase(key);
         memused_ = memused_ - size;
         return true;
@@ -112,6 +115,7 @@ public:
 	}
 
   void reset() {
+    // Delete all in the Cache and queue in the evictor
     while (memused_ > 0)
     {
       key_type retkey = fifo_evictor->evict();

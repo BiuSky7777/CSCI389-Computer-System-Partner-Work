@@ -59,8 +59,8 @@ int test_get()
 
 	// check get for existed key
 	// check both returned value and size
-	key_type get_val = c.get(key, size2);
-	assert(get_val == "z");
+	Cache::val_type get_val = c.get(key, size2);
+	assert(strcmp(get_val,"z") == 0);
 	assert(size2 == size);
 
 	// check get for nonexisted key
@@ -169,7 +169,7 @@ int test_evict()
 	key_type key6 = "f";
 	c.set(key6, val, size);
 	Cache::val_type key6val = c.get(key6,size);
-	assert(key6val == "z");
+	assert(strcmp(key6val,"z") == 0);
 	assert(c.space_used() == 10);
 
 	auto evict_val = c.get(key1, size);
