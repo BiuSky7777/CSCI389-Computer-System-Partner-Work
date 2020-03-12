@@ -224,13 +224,65 @@ TEST_CASE("Evict")
       	c.set(key7, val7, size7);
       	REQUIRE(c.space_used() == 9);
 
+      	auto evict_val1 = c.get(key1, size7);
+      	REQUIRE(evict_val1 == nullptr);
+      	REQUIRE(size7 == 0);
+      	size7 = 10; //redefine size7 to check
       	auto evict_val2 = c.get(key2, size7);
       	REQUIRE(evict_val2 == nullptr);
       	REQUIRE(size7 == 0);
-      	size7 = 10; //redefine size7 to check
-      	auto evict_val3 = c.get(key3, size7);
-      	REQUIRE(evict_val3 == nullptr);
-      	REQUIRE(size7 == 0);
+        c.reset();
+    }
+
+}
+
+
+TEST_CASE("Reset")
+{
+
+    SECTION("Ensure that reset cleans the Cache and gives back correct space used.")
+    {
+        key_type key1 = "a";
+      	key_type key2 = "b";
+      	key_type key3 = "c";
+      	key_type key4 = "d";
+      	key_type key5 = "e";
+      	Cache::val_type val = "z";
+      	Cache::size_type size = strlen(val)+1;
+      	c.set(key1, val, size);
+      	c.set(key2, val, size);
+      	c.set(key3, val, size);
+      	c.set(key4, val, size);
+      	c.set(key5, val, size);
+
+      	REQUIRE(c.space_used() != 0);
+
+      	c.reset();
+      	REQUIRE(c.space_used() == 0);
+
+        c.reset();
+    }
+
+    SECTION("Ensure that reset cleans the Cache and gives back correct space used.")
+    {
+        key_type key1 = "a";
+        key_type key2 = "b";
+        key_type key3 = "c";
+        key_type key4 = "d";
+        key_type key5 = "e";
+        Cache::val_type val = "z";
+        Cache::size_type size = strlen(val)+1;
+        c.set(key1, val, size);
+        c.set(key2, val, size);
+        c.set(key3, val, size);
+        c.set(key4, val, size);
+        c.set(key5, val, size);
+
+        c.reset();
+        auto get_val = c.get(key1, size);
+        REQUIRE(get_val == nullptr);
+        REQUIRE(size == 0);
+
         c.reset();
     }
 
