@@ -284,6 +284,7 @@ TEST_CASE("Reset")
         REQUIRE(size == 0);
 
         c.reset();
+        
     }
 
 }
