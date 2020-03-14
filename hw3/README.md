@@ -79,9 +79,9 @@ Failures are caused by the following problems:
 
 ### Analysis
 Failures are caused by the following problems:
-+ Compliation Failure: Did not include <unordered map>
++ Compliation Failure: Did not include `unordered map`
 + Compilation Failure: Did not define template  for Pair object
-+ Second input of `get` is not modified to the correct rectuned val's size (most failures were caused by this problem)
++ Second input of `get` is not modified to the correct rectuned val's size (most failures were caused by this problem, similar as before.)
 
 ## 3rd Project: Hrishee & Prasun
 
@@ -123,8 +123,4 @@ Evict 2
   with expansion:
     10 == 9
 ```
-
-
-A description of what is tested (not how--document your code instead).
-Test status (fail/pass).
 
