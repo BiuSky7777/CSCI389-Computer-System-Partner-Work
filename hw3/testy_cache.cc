@@ -19,6 +19,7 @@ TEST_CASE("Set/Get")
 {
     SECTION("The value of the existed key is returned correctly.")
     {
+        c.reset();
         key_type key = "a";
       	Cache::val_type val = "z";
       	Cache::size_type size = strlen(val)+1;
@@ -35,6 +36,7 @@ TEST_CASE("Set/Get")
 
     SECTION("The size of the existed key's value is returned correctly.")
     {
+        c.reset();
         key_type key = "a";
         Cache::val_type val = "z";
         Cache::size_type size = strlen(val)+1;
@@ -51,6 +53,7 @@ TEST_CASE("Set/Get")
 
     SECTION("The value of the nonexisted key is returned correctly.")
     {
+        c.reset();
         key_type key = "a";
         Cache::val_type val = "z";
         Cache::size_type size = strlen(val)+1;
@@ -68,6 +71,7 @@ TEST_CASE("Set/Get")
 
     SECTION("The size of the nonexisted key's value is returned correctly.")
     {
+        c.reset();
         key_type key = "a";
         Cache::val_type val = "z";
         Cache::size_type size = strlen(val)+1;
@@ -88,6 +92,7 @@ TEST_CASE("Del")
 {
     SECTION("The selected key is deleted from the cache successfully.")
     {
+        c.reset();
         key_type key = "a";
         Cache::val_type val = "z";
         Cache::size_type size = strlen(val)+1;
@@ -101,6 +106,7 @@ TEST_CASE("Del")
 
     SECTION("The selected key cannot be got after the deletion.")
     {
+        c.reset();
         key_type key = "a";
         Cache::val_type val = "z";
         Cache::size_type size = strlen(val)+1;
@@ -113,8 +119,9 @@ TEST_CASE("Del")
         c.reset();
     }
 
-    SECTION("The value of the deleted key is returned correctly.")
+    SECTION("The value of the nonexisted key cannot be deleted.")
     {
+        c.reset();
         key_type key = "a";
         Cache::val_type val = "z";
         Cache::size_type size = strlen(val)+1;
@@ -133,12 +140,14 @@ TEST_CASE("Space_used")
 {
     SECTION("Ensure that initial Cache has 0 space used.")
     {
+        c.reset();
         REQUIRE(c.space_used() == 0);
         c.reset();
     }
 
     SECTION("Ensure that Cache has coreect space used after setting pairs.")
     {
+        c.reset();
         key_type key = "a";
         Cache::val_type val = "z";
         Cache::size_type size = strlen(val)+1;
@@ -155,6 +164,7 @@ TEST_CASE("Space_used")
 
     SECTION("Ensure that Cache has coreect space used after deleting pairs.")
     {
+        c.reset();
         key_type key = "a";
         Cache::val_type val = "z";
         Cache::size_type size = strlen(val)+1;
@@ -181,6 +191,7 @@ TEST_CASE("Evict")
 
     SECTION("Ensure that when only one key gets evicted, Cache has correct used space and the order of the eviction is correct.")
     {
+        c.reset();
         key_type key1 = "a";
         key_type key2 = "b";
         key_type key3 = "c";
@@ -203,8 +214,9 @@ TEST_CASE("Evict")
         c.reset();
     }
 
-    SECTION("Ensure that when two keys get evicted, Cache has correct used space and the order of the eviction is correct.")
+    SECTION("Ensure that Cache evicts enough space for newly added key when multiple keys need to be evicted.")
     {
+        c.reset();
         key_type key1 = "a";
         key_type key2 = "b";
         key_type key3 = "c";
@@ -240,8 +252,9 @@ TEST_CASE("Evict")
 TEST_CASE("Reset")
 {
 
-    SECTION("Ensure that reset cleans the Cache and gives back correct space used.")
+    SECTION("Ensure that reset cleans the Cache and gives back 0 used space.")
     {
+        c.reset();
         key_type key1 = "a";
       	key_type key2 = "b";
       	key_type key3 = "c";
@@ -263,8 +276,9 @@ TEST_CASE("Reset")
         c.reset();
     }
 
-    SECTION("Ensure that reset cleans the Cache and gives back correct space used.")
+    SECTION("Ensure that after reset cleans the Cache and no key can be retrieved.")
     {
+        c.reset();
         key_type key1 = "a";
         key_type key2 = "b";
         key_type key3 = "c";
@@ -284,7 +298,7 @@ TEST_CASE("Reset")
         REQUIRE(size == 0);
 
         c.reset();
-        
+
     }
 
 }
