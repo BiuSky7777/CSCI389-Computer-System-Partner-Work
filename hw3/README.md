@@ -27,13 +27,13 @@
 | Set/Get 2 | Pass |
 | Set/Get 3 | Pass |
 | Set/Get 4 | Fail |
-| Del 1 | Fail |
+| Del 1 | Pass |
 | Del 2 | Fail |
-| Del 3 | Fail |
-| Space_used 1 | Fail |
+| Del 3 | Pass |
+| Space_used 1 | Pass |
 | Space_used 2 | Pass |
 | Space_used 3 | Pass |
-| Evict 1 | Fail |
+| Evict 1 | Pass |
 | Evict 2 | Fail |
 | Reset 1 | Pass |
 | Reset 2 | Fail |
@@ -41,9 +41,10 @@
 ### Analysis
 Failures are caused by the following problems:
 + Compliation Failure: included <map> instead of <unordered map>
-+ Space_used seems not to be initialized as 0 (the initialized space_used is 2 by `Test Space_used 1`)
-+ Second input of `get` is not modified to the correct rectuned val's size (most failures were caused by this problem)
-     
++ Second input of `get` is not modified to the correct rectuned val's size (All failures were caused by this problem)
+ 
+ For example (When we call `get` function, it should set the actual size of the returned value (in bytes) in val_size, the second input of `get`. However, this program didn't make the modification) 
+
  ```
  Set/Get 4
  The size of the nonexisted key's value is returned correctly.
@@ -52,11 +53,10 @@ Failures are caused by the following problems:
  ...............................................................................
 
  testy_cache.cc:82: FAILED:
-  REQUIRE( size == 0 )
+   REQUIRE( size == 0 )
  with expansion:
-  2 == 0
+   2 == 0
 ```     
-+ When deleting a nonexisted key, `del` retuned `true`
 
 ## 2ed Project: Mason Koch & Sebastian Simons
 
@@ -66,10 +66,10 @@ Failures are caused by the following problems:
 | Set/Get 2 | Fail |
 | Set/Get 3 | Pass |
 | Set/Get 4 | Fail |
-| Del 1 | Fail |
+| Del 1 | Pass |
 | Del 2 | Fail |
-| Del 3 | Fail |
-| Space_used 1 | Fail |
+| Del 3 | Pass |
+| Space_used 1 | Pass |
 | Space_used 2 | Pass |
 | Space_used 3 | Pass |
 | Evict 1 | Fail |
@@ -81,23 +81,50 @@ Failures are caused by the following problems:
 Failures are caused by the following problems:
 + Compliation Failure: Did not include <unordered map>
 + Compilation Failure: Did not define template  for Pair object
-+ Space_used seems not to be initialized as 0 (the initialized space_used is 2 by `Test Space_used 1`)
 + Second input of `get` is not modified to the correct rectuned val's size (most failures were caused by this problem)
-  
-+ When deleting a nonexisted key, `del` retuned `true`.
+
 ## 3rd Project: Hrishee & Prasun
 
+| Test Name | Test Status |
+| :--- |:---: |
+| Set/Get 1 | Pass |
+| Set/Get 2 | Fail |
+| Set/Get 3 | Pass |
+| Set/Get 4 | Fail |
+| Del 1 | Fail |
+| Del 2 | Fail |
+| Del 3 | Pass |
+| Space_used 1 | Pass |
+| Space_used 2 | Pass |
+| Space_used 3 | Fail |
+| Evict 1 | Fail |
+| Evict 2 | Fail |
+| Reset 1 | Pass |
+| Reset 2 | Fail |
 
+### Analysis
+Failures are caused by the following problems:
++ Second input of `get` is not modified to the correct rectuned val's size (most failures were caused by this problem)
 Test name.
++ Space_used was wong after deletion (`Test Del 1`, `Test Space_used 3`, `Test Evict 2` failed because of this problem)
+
+For example (The original Cache has space 10, which is totally occupied by 5 pairs each with size of 2. Then, a new pair with size of 3 is added. In this case, 2 pairs should be evicted from the front and the new space_used should be 10-4+3=9. However, this program gives back 10): 
+
+```
+Evict 2
+  Ensure that Cache evicts enough space for newly added key when multiple keys
+  need to be evicted.
+-------------------------------------------------------------------------------
+  testy_cache.cc:216
+...............................................................................
+
+  testy_cache.cc:236: FAILED:
+    REQUIRE( c.space_used() == 9 )
+  with expansion:
+    10 == 9
+```
+
+
 A description of what is tested (not how--document your code instead).
 Test status (fail/pass).
 
-
-mason: 
-      
-      
-Reily: included <map> instead of <unordered map>
-        space_used->initial size = 2 != 0
-        get did not return correct size
-        delition did not return true when something get deleted
-  
