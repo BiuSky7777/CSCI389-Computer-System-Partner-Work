@@ -16,7 +16,7 @@ int main(int argc, char *argv[]){
        port = atoi(argv[2]);
   }else{
        maxmem = 1000;
-       port = 11111;
+       port = 11112;
   }
 
   SimpleApp app;
@@ -42,20 +42,17 @@ int main(int argc, char *argv[]){
   });
     
     
-    CROW_ROUTE(app, "/key/<string>/<string>")
-           .methods("PUT"_method)
-           ([&](const request& req, std::string k, std::string val) {
-
-
-          if (req.method == "PUT"_method)
-         {
-
-             uint32_t size = sizeof(val);
-             Cache::val_type val_pointer = val.c_str();
-             c.set(k, val_pointer, size);
-           }
-          return response(200, "Successfully inserted/updated key and value.");
-       });
+    CROW_ROUTE(app, "/keyval/<string>/<string>").methods("PUT"_method)
+    ([&](const request& req, std::string k, std::string val) {
+        if (req.method == "PUT"_method){
+            uint32_t size = sizeof(val);
+            Cache::val_type val_pointer = val.c_str();
+            c.set(k, val_pointer, size);
+            return response(200, "Successfully inserted/updated key and value.");
+        } else {
+            return response(404);
+        }
+    });
 /*
 
   CROW_ROUTE(app, "/keyval/<string>/<string>").methods("PUT"_method)
