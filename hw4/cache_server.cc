@@ -40,8 +40,8 @@ int main(int argc, char *argv[]){
         return crow::response(200, jspair);
       }
   });
-    
-    
+
+
     CROW_ROUTE(app, "/keyval/<string>/<string>").methods("PUT"_method)
     ([&](const request& req, std::string k, std::string val) {
         if (req.method == "PUT"_method){
@@ -65,8 +65,13 @@ int main(int argc, char *argv[]){
 */
   CROW_ROUTE(app, "/key/<string>").methods("DELETE"_method)
   ([&](key_type key){
-    c.del(key);
-    return response(200, "Successfully deleted the k,v pair from the cache");
+      bool exist = c.del(key);
+    if (exist){
+        return response(200, "Successfully deleted the k,v pair from the cache");
+    } else {
+        string err = "The key is not in the cache.";
+        return crow::response(500,err);
+    }
   });
 
   CROW_ROUTE(app, "/head").methods("HEAD"_method)
