@@ -8,14 +8,15 @@
 
 #include "cache.hh"
 #include "fifo_evictor.hh"
-#include "cache_client.cc"
-#include "cache_server.cc"
+
 using namespace std;
 
 // Initialize cache and key/value variables/pointers
-sting port = "11112";
+string port = "11112";
 string address = "0.0.0.0";
 Cache c(port, address);
+
+// test with maxmem_ = 5
 
 
 TEST_CASE("Set/Get")
@@ -25,15 +26,16 @@ TEST_CASE("Set/Get")
         c.reset();
         key_type key = "a";
       	Cache::val_type val = "z";
-      	Cache::size_type size = strlen(val)+1;
+      	Cache::size_type size = strlen(val);
       	c.set(key, val, size);
       	key_type key2 = "b";
       	Cache::val_type val2 = "xy";
-      	Cache::size_type size2 = strlen(val2)+1;
+      	Cache::size_type size2 = strlen(val2);
       	c.set(key2, val2, size2);
 
         Cache::val_type get_val = c.get(key, size2);
-        REQUIRE(strcmp(get_val,"z") == 0);
+        REQUIRE(size2 == size);
+        REQUIRE(memcmp(get_val,"z",size2) == 0);
         c.reset();
     }
 
@@ -42,11 +44,11 @@ TEST_CASE("Set/Get")
         c.reset();
         key_type key = "a";
         Cache::val_type val = "z";
-        Cache::size_type size = strlen(val)+1;
+        Cache::size_type size = strlen(val);
         c.set(key, val, size);
         key_type key2 = "b";
         Cache::val_type val2 = "xy";
-        Cache::size_type size2 = strlen(val2)+1;
+        Cache::size_type size2 = strlen(val2);
         c.set(key2, val2, size2);
 
         Cache::val_type get_val = c.get(key, size2);
@@ -59,11 +61,11 @@ TEST_CASE("Set/Get")
         c.reset();
         key_type key = "a";
         Cache::val_type val = "z";
-        Cache::size_type size = strlen(val)+1;
+        Cache::size_type size = strlen(val);
         c.set(key, val, size);
         key_type key2 = "b";
         Cache::val_type val2 = "xy";
-        Cache::size_type size2 = strlen(val2)+1;
+        Cache::size_type size2 = strlen(val2);
         c.set(key2, val2, size2);
 
         key_type fake_key = "o";
@@ -77,11 +79,11 @@ TEST_CASE("Set/Get")
         c.reset();
         key_type key = "a";
         Cache::val_type val = "z";
-        Cache::size_type size = strlen(val)+1;
+        Cache::size_type size = strlen(val);
         c.set(key, val, size);
         key_type key2 = "b";
         Cache::val_type val2 = "xy";
-        Cache::size_type size2 = strlen(val2)+1;
+        Cache::size_type size2 = strlen(val2);
         c.set(key2, val2, size2);
 
         key_type fake_key = "o";
@@ -98,8 +100,9 @@ TEST_CASE("Del")
         c.reset();
         key_type key = "a";
         Cache::val_type val = "z";
-        Cache::size_type size = strlen(val)+1;
+        Cache::size_type size = strlen(val);
         c.set(key, val, size);
+        cout << "hi"<<endl;
 
         bool del_flag = c.del(key);
         REQUIRE(del_flag == true);
@@ -112,11 +115,12 @@ TEST_CASE("Del")
         c.reset();
         key_type key = "a";
         Cache::val_type val = "z";
-        Cache::size_type size = strlen(val)+1;
+        Cache::size_type size = strlen(val);
         c.set(key, val, size);
 
         bool del_flag = c.del(key);
         auto get_deleted_val = c.get(key, size);
+
         REQUIRE(get_deleted_val == nullptr);
         REQUIRE(size == 0);
         c.reset();
@@ -127,7 +131,7 @@ TEST_CASE("Del")
         c.reset();
         key_type key = "a";
         Cache::val_type val = "z";
-        Cache::size_type size = strlen(val)+1;
+        Cache::size_type size = strlen(val);
         c.set(key, val, size);
 
         key_type key2 = "b";
@@ -153,12 +157,12 @@ TEST_CASE("Space_used")
         c.reset();
         key_type key = "a";
         Cache::val_type val = "z";
-        Cache::size_type size = strlen(val)+1;
+        Cache::size_type size = strlen(val);
         c.set(key, val, size);
 
         key_type key2 = "b";
         Cache::val_type val2 = "xy";
-        Cache::size_type size2 = strlen(val2)+1;
+        Cache::size_type size2 = strlen(val2);
         c.set(key2, val2, size2);
 
         REQUIRE(c.space_used() == size+size2);
@@ -170,15 +174,18 @@ TEST_CASE("Space_used")
         c.reset();
         key_type key = "a";
         Cache::val_type val = "z";
-        Cache::size_type size = strlen(val)+1;
+        Cache::size_type size = strlen(val);
         c.set(key, val, size);
 
         key_type key2 = "b";
         Cache::val_type val2 = "xy";
-        Cache::size_type size2 = strlen(val2)+1;
+        Cache::size_type size2 = strlen(val2);
         c.set(key2, val2, size2);
 
+        cout<<"successfully"<<endl;
         c.del(key2);
+        cout<<"rreached here"<<endl;
+        cout<<c.space_used()<<endl;
         REQUIRE(c.space_used() == size);
 
         c.del(key);
@@ -191,55 +198,39 @@ TEST_CASE("Space_used")
 
 TEST_CASE("Evict")
 {
-    SECTION("Check when evictor is a nullptr")
-    {
-
-        c1.reset();
-        key_type key1 = "a";
-        key_type key2 = "b";
-        key_type key3 = "c";
-        key_type key4 = "d";
-        Cache::val_type val = "z";
-        Cache::size_type size = strlen(val)+1;
-        c1.set(key1, val, size);
-        c1.set(key2, val, size);
-        c1.set(key3, val, size);
-        c1.set(key4, val, size);
-
-        key_type key6 = "f";
-        Cache::val_type val6 = "yz";
-        Cache::size_type size6 = strlen(val6)+1;
-        c1.set(key6, val6, size6);
-        REQUIRE(c1.space_used() == 8);
-        auto cannotadd = c1.get(key6, size6);
-        REQUIRE(cannotadd == nullptr);
-        REQUIRE(size6 == 0);
-        c1.reset();
-    }
 
     SECTION("Ensure that when only one key gets evicted, Cache has correct used space and the order of the eviction is correct.")
     {
-        c.reset();
-        key_type key1 = "a";
-        key_type key2 = "b";
-        key_type key3 = "c";
-        key_type key4 = "d";
-        key_type key5 = "e";
-        Cache::val_type val = "z";
-        Cache::size_type size = strlen(val)+1;
-        c.set(key1, val, size);
-        c.set(key2, val, size);
-        c.set(key3, val, size);
-        c.set(key4, val, size);
-        c.set(key5, val, size);
 
-        key_type key6 = "f";
-        c.set(key6, val, size);
-        REQUIRE(c.space_used() == 10);
-        auto evict_val = c.get(key1, size);
-        REQUIRE(evict_val == nullptr);
-        REQUIRE(size == 0);
-        c.reset();
+            c.reset();
+
+            key_type key1 = "a";
+            key_type key2 = "b";
+            key_type key3 = "c";
+            key_type key4 = "d";
+            key_type key5 = "e";
+            Cache::val_type val = "z";
+            Cache::size_type size = strlen(val);
+            c.set(key1, val, size);
+            cout<<"hi"<<endl;
+            c.set(key2, val, size);
+            cout<<"hi"<<endl;
+            c.set(key3, val, size);
+            cout<<"hi"<<endl;
+            c.set(key4, val, size);
+            c.set(key5, val, size);
+            cout<<"hi"<<endl;
+
+
+            key_type key6 = "f";
+            c.set(key6, val, size);
+
+            REQUIRE(c.space_used() == 5);
+
+            auto evict_val = c.get(key1, size);
+            REQUIRE(evict_val == nullptr);
+            REQUIRE(size == 0);
+            c.reset();
     }
 
     SECTION("Ensure that Cache evicts enough space for newly added key when multiple keys need to be evicted.")
@@ -247,30 +238,25 @@ TEST_CASE("Evict")
         c.reset();
         key_type key1 = "a";
         key_type key2 = "b";
+        Cache::val_type val1 = "xy";
+        Cache::val_type val2 = "kkk";
+        Cache::size_type size1 = strlen(val1);
+        Cache::size_type size2 = strlen(val2);
+        c.set(key1, val1, size1);
+        c.set(key2, val2, size2);
+
+
         key_type key3 = "c";
-        key_type key4 = "d";
-        key_type key5 = "e";
-        Cache::val_type val = "z";
-        Cache::size_type size = strlen(val)+1;
-        c.set(key1, val, size);
-        c.set(key2, val, size);
-        c.set(key3, val, size);
-        c.set(key4, val, size);
-        c.set(key5, val, size);
+      	Cache::val_type val3 = "z";
+      	Cache::size_type size3 = strlen(val3);
+      	c.set(key3, val3, size3);
+      	REQUIRE(c.space_used() == 4);
 
-        key_type key7 = "g";
-      	Cache::val_type val7 = "yz";
-      	Cache::size_type size7 = strlen(val7)+1;
-      	c.set(key7, val7, size7);
-      	REQUIRE(c.space_used() == 9);
-
-      	auto evict_val1 = c.get(key1, size7);
+        size1 = 10;
+      	auto evict_val1 = c.get(key1, size1);
       	REQUIRE(evict_val1 == nullptr);
-      	REQUIRE(size7 == 0);
-      	size7 = 10; //redefine size7 to check
-      	auto evict_val2 = c.get(key2, size7);
-      	REQUIRE(evict_val2 == nullptr);
-      	REQUIRE(size7 == 0);
+      	REQUIRE(size1 == 0);
+
         c.reset();
     }
 
@@ -289,7 +275,7 @@ TEST_CASE("Reset")
       	key_type key4 = "d";
       	key_type key5 = "e";
       	Cache::val_type val = "z";
-      	Cache::size_type size = strlen(val)+1;
+      	Cache::size_type size = strlen(val);
       	c.set(key1, val, size);
       	c.set(key2, val, size);
       	c.set(key3, val, size);
@@ -313,7 +299,7 @@ TEST_CASE("Reset")
         key_type key4 = "d";
         key_type key5 = "e";
         Cache::val_type val = "z";
-        Cache::size_type size = strlen(val)+1;
+        Cache::size_type size = strlen(val);
         c.set(key1, val, size);
         c.set(key2, val, size);
         c.set(key3, val, size);

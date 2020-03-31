@@ -32,11 +32,10 @@ int main(int argc, char *argv[]){
         return crow::response(500,err);
       } else {
         auto ptr_val = c.get(key,size);
-        auto val_val = *ptr_val;
 
         crow::json::wvalue jspair;
         jspair["key"] = key;
-        jspair["value"] = val_val;
+        jspair["value"] = ptr_val;
         return crow::response(200, jspair);
       }
   });
@@ -45,28 +44,21 @@ int main(int argc, char *argv[]){
     CROW_ROUTE(app, "/keyval/<string>/<string>").methods("PUT"_method)
     ([&](const request& req, std::string k, std::string val) {
         if (req.method == "PUT"_method){
-            uint32_t size = sizeof(val);
+            uint32_t size = val.length();
             Cache::val_type val_pointer = val.c_str();
             c.set(k, val_pointer, size);
+            cout<< "successfully put"<<endl;
             return response(200, "Successfully inserted/updated key and value.");
         } else {
             return response(404);
         }
     });
-/*
 
-  CROW_ROUTE(app, "/keyval/<string>/<string>").methods("PUT"_method)
-  ([&](key_type key, Cache::val_type val){
-      Cache::size_type size = sizeof(val); //strlen(val)+1
-      c.set(key, val, size);
-
-      return response(200, "Successfully created/replaced a k,v pair in the cache");
-  });
-*/
   CROW_ROUTE(app, "/key/<string>").methods("DELETE"_method)
   ([&](key_type key){
       bool exist = c.del(key);
     if (exist){
+        cout<<"successfully"<<endl;
         return response(200, "Successfully deleted the k,v pair from the cache");
     } else {
         string err = "The key is not in the cache.";
@@ -83,6 +75,13 @@ int main(int argc, char *argv[]){
     header["Space-used"] = c.space_used();
 
     return response(200, header);
+
+  });
+//for space_used in client.
+  CROW_ROUTE(app, "/space_used").methods("GET"_method)
+  ([&](){
+    std::string str = to_string(c.space_used());
+    return response(200, str);
 
   });
 

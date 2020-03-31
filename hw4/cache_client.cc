@@ -7,14 +7,9 @@
 #include <stdio.h>
 #include <curl/curl.h>
 #include "cache.hh"
-#include "fifo_evictor.hh"
+#include <cassert>
 using namespace std;
 
-const char* url_get_key = "http://0.0.0.0:11112/key/";
-const char* url_put_key_val = "http://0.0.0.0:11112/keyval/";
-const char* url_del_key = "http://0.0.0.0:11112/key/";
-const char* url_head = "http://0.0.0.0:11112/head";
-const char* url_post = "http://0.0.0.0:11112/reset";
 
 struct Array_t{
   char* array;
@@ -24,35 +19,36 @@ struct Array_t{
 /* the function to invoke as the data recieved */
 Cache::size_type static write_callback_func(void *buffer, Cache::size_type _ ,Cache::size_type buffer_size,void *userp)
 {
-    printf("\n\nIn write_callback_func()...\n");
-    int bufferlen = sizeof(buffer);
-    printf("In write_callback_func(): strlen(buffer) = [%d]\n", bufferlen);
-    printf("In write_callback_func(): buffer = [%s]\n", buffer);
+    // printf("\n\nIn write_callback_func()...\n");
+    int bufferlen = buffer_size;
+    // printf("In write_callback_func(): strlen(buffer) = [%d]\n", bufferlen);
+    // printf("In write_callback_func(): buffer = [%s]\n", buffer);
     char **response_ptr = (char**)userp;
-    printf("In write_callback_func(): About to call strndup()...\n");
+    // printf("In write_callback_func(): About to call strndup()...\n");
     /* assuming the response is a string */
     //*response_ptr = strndup(buffer, (size_t)(size *nmemb));
     //apr_cpystrn((const char *)userp, buffer, bufferlen);
-    printf("In write_callback_func(): Finished setting *response_ptr, returning...\n");
+    // printf("In write_callback_func(): Finished setting *response_ptr, returning...\n");
 
     Array_t* arr_t = (Array_t*) userp;
     arr_t -> array_size = buffer_size;
     arr_t -> array = new char[arr_t-> array_size];
-
+    char *bufferp = (char*) buffer;
     for(int i = 0; i < buffer_size; i++){
-        arr_t -> array[i] = buffer[i];
+        arr_t -> array[i] = bufferp[i];
     }
     return buffer_size;
 } // end write_callback_func()
 
 class Cache::Impl {
 
-  const string port_;
-  const string address_;
+    const string port_;
+    const string address_;
 
-  CURL* curl_;
+    CURL* curl_;
+    char* check_ = NULL;
+    string url;
 
-  string url;
 public:
 
   Impl(string port, string address) :
@@ -60,66 +56,102 @@ public:
       url = "http://"+address_+":"+port_;
    }
 
-  ~Impl(){}
+  ~Impl(){
+      curl_easy_cleanup(curl_);
+  }
 
   void set(key_type key, val_type val, size_type size)
   {
-    std::string command = url+"/keyval/"+key+'/'+val;
-
+    string command = url+"/keyval/"+key+'/'+val;
+    char *commandc = (char*) command.c_str();
     if (curl_){
         CURLcode res;
-        curl_easy_setopt(curl_,CURLOPT_URL,command);
-        res = curl_easy_perform(curl_);
 
+        curl_easy_setopt(curl_, CURLOPT_CUSTOMREQUEST, "PUT");
+        curl_easy_setopt(curl_,CURLOPT_URL,commandc);
+
+        std::cout << "test1" << '\n';
+        res = curl_easy_perform(curl_);
+        std::cout << "test2" << '\n';
         if (res != CURLE_OK){
           fprintf(stderr, "curl_easy_perform() failed: %s\n",
           curl_easy_strerror(res));
         }
+        std::cout << "test3" << '\n';
 
-        curl_easy_cleanup(curl_);
     }
   }
 
   val_type get(key_type key, size_type& val_size)
   {
       std::string command = url+"/key/"+key;
-
-      Array_t* arr_t;
+      char *commandc = (char*) command.c_str();
+      Array_t arr_t;
 
       if (curl_){
           CURLcode res;
-          curl_easy_setopt(curl_,CURLOPT_URL,command);
+          long response_code;
+
+          curl_easy_setopt(curl_, CURLOPT_CUSTOMREQUEST, "GET");
+          curl_easy_setopt(curl_,CURLOPT_URL,commandc);
 
           /* setting a callback function to return the data */
           curl_easy_setopt(curl_, CURLOPT_WRITEFUNCTION, write_callback_func);
           /* passing the pointer to the response as the callback parameter */
           //setting the callback user data(userp).
           curl_easy_setopt(curl_, CURLOPT_WRITEDATA, &arr_t);
+
           res = curl_easy_perform(curl_);
 
+          if(res == CURLE_OK) {
 
-          if (res != CURLE_OK){
+            curl_easy_getinfo(curl_, CURLINFO_RESPONSE_CODE, &response_code);
+        }else{
 			      fprintf(stderr, "curl_easy_perform() failed: %s\n",
             curl_easy_strerror(res));
           }
 
-          curl_easy_cleanup(curl_);
-      }
 
-      return arr_t->array;
+
+      if (response_code == 500) {
+          val_size =0;
+          return nullptr;
+      }else {
+          size_type i;
+          val_type val = &arr_t.array[10];
+          for (i=10; arr_t.array[i]!=',';i++){
+
+          }
+
+          val_size = i-11;
+          //memory leak
+          if(check_ != NULL) {
+              delete[]check_;
+          }
+
+          check_ = arr_t.array;
+
+          return val;
+
+      }
+    }
+    val_size = 0;
+    return nullptr;
+
   }
 
   bool del(key_type key)
   {
     std::string command = url+"/key/"+key;
-
+    char *commandc = (char*) command.c_str();
+    cout << commandc <<endl;
 		if(curl_)
 		{
 
             long response_code;
-      CURLcode res;
+            CURLcode res;
 			curl_easy_setopt(curl_, CURLOPT_CUSTOMREQUEST, "DELETE");
-			curl_easy_setopt(curl_, CURLOPT_URL, command);
+			curl_easy_setopt(curl_, CURLOPT_URL, commandc);
 
 		  res = curl_easy_perform(curl_);
 
@@ -131,8 +163,9 @@ public:
 				curl_easy_strerror(res));
             }
 
-			curl_easy_cleanup(curl_);
+
             if (response_code == 200) {
+                cout << "trueeeeee"<<endl;
                 return true;
             }else {
                 return false;
@@ -144,39 +177,51 @@ public:
 
 
   size_type space_used() const{
-    std::string command = url+"/head";
-    Array_t* arr_t; //?????
+    std::string command = url+"/space_used";
+    char *commandc = (char*) command.c_str();
+    Array_t arr_t;
 
-    if(curl_) {
+    if (curl_){
         CURLcode res;
-        curl_easy_setopt(curl_,CURLOPT_URL,command);
 
-        curl_easy_setopt(curl_, CURLOPT_HEADER, 1L);
+        curl_easy_setopt(curl_, CURLOPT_CUSTOMREQUEST, "GET");
+        curl_easy_setopt(curl_,CURLOPT_URL,commandc);
 
+        /* setting a callback function to return the data */
         curl_easy_setopt(curl_, CURLOPT_WRITEFUNCTION, write_callback_func);
+        /* passing the pointer to the response as the callback parameter */
+        //setting the callback user data(userp).
         curl_easy_setopt(curl_, CURLOPT_WRITEDATA, &arr_t);
-
         res = curl_easy_perform(curl_);
 
-        if (res != CURLE_OK)
-          fprintf(stderr, "curl_easy_perform() failed: %s\n",
-          curl_easy_strerror(res));
 
-        curl_easy_cleanup(curl_);
+        if (res != CURLE_OK){
+                fprintf(stderr, "curl_easy_perform() failed: %s\n",
+          curl_easy_strerror(res));
+        }
+
     }
-    return arr_t -> array;
+
+    std::string str;
+    size_type space_used = 0;
+    for (int i=0;i< arr_t.array_size; i++) {
+        space_used = space_used * 10 + arr_t.array[i]-'0';
+    }
+
+    return space_used;
   }
 
   void reset() {
     std::string command = url+"/reset";
-
+    char *commandc = (char*) command.c_str();
     if(curl_) {
 
         CURLcode res;
 
-    		curl_easy_setopt(curl_, CURLOPT_URL, command);
 
-    		curl_easy_setopt(curl_, CURLOPT_POST, 1L);
+            curl_easy_setopt(curl_, CURLOPT_CUSTOMREQUEST, "POST");
+    		curl_easy_setopt(curl_, CURLOPT_URL, commandc);
+
 
     		res = curl_easy_perform(curl_);
 
@@ -184,7 +229,6 @@ public:
           fprintf(stderr, "curl_easy_perform() failed: %s\n",
           curl_easy_strerror(res));
 
-        curl_easy_cleanup(curl_);
   	}
   }
 
@@ -214,3 +258,37 @@ Cache::size_type Cache::space_used() const {
 void Cache::reset() {
   return pImpl_-> reset();
 }
+
+//
+// int main(){
+//     string port = "11112";
+//     string address = "0.0.0.0";
+//     Cache c(port, address);
+//
+//     c.reset();
+//
+//     key_type key1 = "a";
+//     key_type key2 = "b";
+//     key_type key3 = "c";
+//     key_type key4 = "d";
+//     key_type key5 = "e";
+//     Cache::val_type val = "z";
+//     Cache::size_type size = strlen(val);
+//     c.set(key1, val, size);
+//     c.set(key2, val, size);
+//     c.set(key3, val, size);
+//     c.set(key4, val, size);
+//     c.set(key5, val, size);
+//
+//     key_type key6 = "f";
+//     c.set(key6, val, size);
+//
+//     assert(c.space_used() == 5);
+//
+//     auto evict_val = c.get(key1, size);
+//     assert(evict_val == nullptr);
+//     assert(size == 0);
+//     c.reset();
+//
+//     return 0;
+// }
