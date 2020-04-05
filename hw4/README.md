@@ -21,7 +21,7 @@ curl -I localhost:11112/head
 
 We use libcurl (https://curl.haxx.se/libcurl/) to construct the cache_client.cc.
 1. Since there is no explicit way to retrieve data in libcurl, we write a callback function according to https://curl.haxx.se/mail/lib-2012-06/0308.html. Then we use this callback function, CURLOPT_WRITEFUNCTION and CURLOPT_WRITEDATA in libcurl to implement the retrieval.
-2. To run the client and test it, we keep the server running, and then use the command line:
+2. To run the client and test it, we keep the server running (with ./server 5 11112), and then use the command line:
 ```
 client: g++ -std=c++17 -o client cache_client.cc test_cache_client.cc  -lcurl
 ./client
@@ -38,13 +38,13 @@ client: g++ -std=c++17 -o client cache_client.cc test_cache_client.cc  -lcurl
 | Del 2 | Check that the selected key cannot be got after the deletion. | Fail |
 | Del 3 | Check that a nonexisted key cannot be deleted. | Fail |
 | Space_used1 | Check if the initial Cache has 0 space used. | Pass |
-| Space_used2 | Check if Cache has coreect space used after setting keys. | Pass |
-| Space_used3 | Check if Cache has coreect space used after deleting keys. | Fail |
-| Evict 1 | Check if Cache evicts enough space for newly added key when only one key need to be evicted, and the eviction follows the right order. |  Fail |
-| Evict 2 | Check if Cache evicts enough space for a newly added key when multiple keys need to be evicted, and the eviction follows the right order. |  Fail |
+| Space_used2 | Check if Cache has correct space used after setting keys. | Pass |
+| Space_used3 | Check if Cache has correct space used after deleting keys. | Fail |
+| Evict 1 | Check if Cache evicts enough space for newly added key when only one key need to be evicted, and the eviction follows the right order. |  Pass |
+| Evict 2 | Check if Cache evicts enough space for a newly added key when multiple keys need to be evicted, and the eviction follows the right order. |  Pass |
 | Reset 1 | Check if `reset` cleans Cache and gives back 0 used space | Pass |
 | Reset 2 | Check that, after `reset` cleans Cache, no key can be retrieved | Pass |
 
 Reason:
-We have those failures every time we directly call del/key/<string> (from cache_server.cc).
+We have those failures every time we directly call del/key/<string> (from cache_server.cc) for nonexisted key.
 It always gives us "bus error" and "Segmentation fault", and so we thought the failures are due memory allocation problem which we might not handle in DELETE method in cache_server.cc.
