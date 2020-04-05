@@ -1,4 +1,33 @@
-# Part 1
+# HW 4 Let's Network
+
+## Compile and Run
+
+### Server
+We use crow(github address: https://github.com/ipkn/crow) to construct the cache_server.cc.
+1. We followed its instruction to download boost.
+2. Due to the version of boost used in crow, we modified the "CSCI389-Computer-System-Partner-Work\crow\include\crow\include\crow\socket.adptors.hh" according to https://git.xmr.pm/wownero/onion-wownero-blockchain-explorer/commit/444effc2878ae714feb9c3087c81b4f2f25975be. (We have included the new crow folders and so there is no need for you to implement this step.)
+3. To run the server, we use the command line:
+```
+g++ -std=c++17 -I../crow/include -Wall -Wextra cache_lib.cc cache_server.cc fifo_evictor.cc -o server -pthread -lboost_system
+./server 5 11112
+```
+With one window running, we open another window and give instructions like:
+```
+curl -X Put localhost:11112/keyval/a/apple
+curl -I localhost:11112/head
+```
+
+### Client
+
+We use libcurl (https://curl.haxx.se/libcurl/) to construct the cache_client.cc.
+1. Since there is no explicit way to retrieve data in libcurl, we write a callback function according to https://curl.haxx.se/mail/lib-2012-06/0308.html. Then we use this callback function, CURLOPT_WRITEFUNCTION and CURLOPT_WRITEDATA in libcurl to implement the retrieval.
+2. To run the client and test it, we keep the server running, and then use the command line:
+```
+client: g++ -std=c++17 -o client cache_client.cc test_cache_client.cc  -lcurl
+./client
+```
+
+## Test
 | Test Name | Desciption | Test Status |
 | :--- |:---: | :---: |
 | Set/Get 1 | `set` a key and check if the value of this existed key is correctly returned by calling `get`. | Pass |
@@ -6,121 +35,16 @@
 | Set/Get 3 | Check if the value of a nonexisted key is correctly returned by calling `get`.  | Pass |
 | Set/Get 4 | Check if the value of the size of a nonexisted key's value is correctly returned by calling `get`.  | Pass |
 | Del 1 | Check if the selected key is successfully deleted from the cache by calling `del` and the used_space has decreases. | Pass |
-| Del 2 | Check that the selected key cannot be got after the deletion. | Pass |
-| Del 3 | Check that a nonexisted key cannot be deleted. | Pass |
+| Del 2 | Check that the selected key cannot be got after the deletion. | Fail |
+| Del 3 | Check that a nonexisted key cannot be deleted. | Fail |
 | Space_used1 | Check if the initial Cache has 0 space used. | Pass |
 | Space_used2 | Check if Cache has coreect space used after setting keys. | Pass |
-| Space_used3 | Check if Cache has coreect space used after deleting keys. | Pass |
-| Evict 1 | Check if Cache evicts enough space for newly added key when only one key need to be evicted, and the eviction follows the right order. |  Pass |
-| Evict 2 | Check if Cache evicts enough space for a newly added key when multiple keys need to be evicted, and the eviction follows the right order. |  Pass |
+| Space_used3 | Check if Cache has coreect space used after deleting keys. | Fail |
+| Evict 1 | Check if Cache evicts enough space for newly added key when only one key need to be evicted, and the eviction follows the right order. |  Fail |
+| Evict 2 | Check if Cache evicts enough space for a newly added key when multiple keys need to be evicted, and the eviction follows the right order. |  Fail |
 | Reset 1 | Check if `reset` cleans Cache and gives back 0 used space | Pass |
 | Reset 2 | Check that, after `reset` cleans Cache, no key can be retrieved | Pass |
 
-
-# Part 2
-
-## 1st Poject: Reilly Cannon & James McCaull
-### Test Result
-| Test Name | Test Status |
-| :--- |:---: |
-| Set/Get 1 | Pass |
-| Set/Get 2 | Pass |
-| Set/Get 3 | Pass |
-| Set/Get 4 | Fail |
-| Del 1 | Pass |
-| Del 2 | Fail |
-| Del 3 | Pass |
-| Space_used 1 | Pass |
-| Space_used 2 | Pass |
-| Space_used 3 | Pass |
-| Evict 1 | Pass |
-| Evict 2 | Fail |
-| Reset 1 | Pass |
-| Reset 2 | Fail |
-
-### Analysis
-Failures are caused by the following problems:
-+ Compliation Failure: included <map> instead of <unordered map>
-+ Second input of `get` is not modified to the correct rectuned val's size (All failures were caused by this problem)
- 
- For example (When we call `get` function, it should set the actual size of the returned value (in bytes) in val_size, the second input of `get`. However, this program didn't make the modification) 
-
- ```
- Set/Get 4
- The size of the nonexisted key's value is returned correctly.
- -------------------------------------------------------------------------------
- testy_cache.cc:69
- ...............................................................................
-
- testy_cache.cc:82: FAILED:
-   REQUIRE( size == 0 )
- with expansion:
-   2 == 0
-```     
-
-## 2ed Project: Mason Koch & Sebastian Simons
-
-| Test Name | Test Status |
-| :--- |:---: |
-| Set/Get 1 | Pass |
-| Set/Get 2 | Fail |
-| Set/Get 3 | Pass |
-| Set/Get 4 | Fail |
-| Del 1 | Pass |
-| Del 2 | Fail |
-| Del 3 | Pass |
-| Space_used 1 | Pass |
-| Space_used 2 | Pass |
-| Space_used 3 | Pass |
-| Evict 1 | Fail |
-| Evict 2 | Fail |
-| Reset 1 | Pass |
-| Reset 2 | Fail |
-
-### Analysis
-Failures are caused by the following problems:
-+ Compliation Failure: Did not include `unordered map`
-+ Compilation Failure: Did not define template  for Pair object
-+ Second input of `get` is not modified to the correct rectuned val's size (most failures were caused by this problem, similar as before.)
-
-## 3rd Project: Hrishee & Prasun
-
-| Test Name | Test Status |
-| :--- |:---: |
-| Set/Get 1 | Pass |
-| Set/Get 2 | Fail |
-| Set/Get 3 | Pass |
-| Set/Get 4 | Fail |
-| Del 1 | Fail |
-| Del 2 | Fail |
-| Del 3 | Pass |
-| Space_used 1 | Pass |
-| Space_used 2 | Pass |
-| Space_used 3 | Fail |
-| Evict 1 | Fail |
-| Evict 2 | Fail |
-| Reset 1 | Pass |
-| Reset 2 | Fail |
-
-### Analysis
-Failures are caused by the following problems:
-+ Second input of `get` is not modified to the correct rectuned val's size (most failures were caused by this problem)
-Test name.
-+ Space_used was wong after deletion (`Test Del 1`, `Test Space_used 3`, `Test Evict 2` failed because of this problem)
-
-For example (The original Cache has space 10, which is totally occupied by 5 pairs each with size of 2. Then, a new pair with size of 3 is added. In this case, 2 pairs should be evicted from the front and the new space_used should be 10-4+3=9. However, this program gives back 10): 
-
-```
-Evict 2
-  Ensure that Cache evicts enough space for newly added key when multiple keys
-  need to be evicted.
--------------------------------------------------------------------------------
-  testy_cache.cc:216
-...............................................................................
-
-  testy_cache.cc:236: FAILED:
-    REQUIRE( c.space_used() == 9 )
-  with expansion:
-    10 == 9
-```
-
+Reason:
+We have those failures every time we directly call del/key/<string> (from cache_server.cc).
+It always gives us "bus error" and "Segmentation fault", and so we thought the failures are due memory allocation problem which we might not handle in DELETE method in cache_server.cc.
