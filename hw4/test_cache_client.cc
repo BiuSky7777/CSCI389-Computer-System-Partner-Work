@@ -102,12 +102,12 @@ TEST_CASE("Del")
         Cache::val_type val = "z";
         Cache::size_type size = strlen(val);
         c.set(key, val, size);
-        cout << "hi"<<endl;
 
         bool del_flag = c.del(key);
         REQUIRE(del_flag == true);
         REQUIRE(c.space_used() == 0);
         c.reset();
+
     }
 
     SECTION("The selected key cannot be got after the deletion.")
@@ -119,6 +119,7 @@ TEST_CASE("Del")
         c.set(key, val, size);
 
         bool del_flag = c.del(key);
+
         auto get_deleted_val = c.get(key, size);
 
         REQUIRE(get_deleted_val == nullptr);
@@ -169,7 +170,7 @@ TEST_CASE("Space_used")
         c.reset();
     }
 
-    SECTION("Ensure that Cache has coreect space used after deleting pairs.")
+    SECTION("Ensure that Cache has correct space used after deleting pairs.")
     {
         c.reset();
         key_type key = "a";
@@ -182,10 +183,7 @@ TEST_CASE("Space_used")
         Cache::size_type size2 = strlen(val2);
         c.set(key2, val2, size2);
 
-        cout<<"successfully"<<endl;
         c.del(key2);
-        cout<<"rreached here"<<endl;
-        cout<<c.space_used()<<endl;
         REQUIRE(c.space_used() == size);
 
         c.del(key);
@@ -212,14 +210,10 @@ TEST_CASE("Evict")
             Cache::val_type val = "z";
             Cache::size_type size = strlen(val);
             c.set(key1, val, size);
-            cout<<"hi"<<endl;
             c.set(key2, val, size);
-            cout<<"hi"<<endl;
             c.set(key3, val, size);
-            cout<<"hi"<<endl;
             c.set(key4, val, size);
             c.set(key5, val, size);
-            cout<<"hi"<<endl;
 
 
             key_type key6 = "f";
@@ -261,7 +255,6 @@ TEST_CASE("Evict")
     }
 
 }
-
 
 TEST_CASE("Reset")
 {
