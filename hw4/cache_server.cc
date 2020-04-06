@@ -30,7 +30,7 @@ int main(int argc, char *argv[]){
         uint32_t size = 1;
         if (c.get(key,size) == nullptr){
             string err = "The key is not in the cache.";
-            return crow::response(500,err);
+            return response(404);
         } else {
             auto ptr_val = c.get(key,size);
             crow::json::wvalue jspair;
@@ -64,7 +64,7 @@ int main(int argc, char *argv[]){
           return response(200, "Successfully deleted the k,v pair from the cache");
       } else {
           string err = "The key is not in the cache.";
-          return response(500,err);
+          return response(404);
       }
   });
 
