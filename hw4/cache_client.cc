@@ -48,13 +48,13 @@ class Cache::Impl {
 
     CURL* curl_;
     char* check_ = NULL;
-    string url;
+    string url_;
 
 public:
 
     Impl(string port, string address) :
     port_(port), address_(address), curl_(curl_easy_init()) {
-        url = "http://"+address_+":"+port_;
+        url_ = "http://"+address_+":"+port_;
     }
 
     ~Impl(){
@@ -63,7 +63,7 @@ public:
 
     void set(key_type key, val_type val, size_type size)
     {
-        string command = url+"/keyval/"+key+'/'+val;
+        string command = url_+"/keyval/"+key+'/'+val;
         char *commandc = (char*) command.c_str();
         if (curl_){
             CURLcode res;
@@ -82,7 +82,7 @@ public:
 
   val_type get(key_type key, size_type& val_size)
   {
-      std::string command = url+"/key/"+key;
+      std::string command = url_+"/key/"+key;
       char *commandc = (char*) command.c_str();
       Array_t arr_t;
 
@@ -108,7 +108,7 @@ public:
               curl_easy_strerror(res));
           }
 
-          if (response_code == 500) {
+          if (response_code == 404) {
               val_size =0;
               return nullptr;
           }else {
@@ -130,7 +130,7 @@ public:
 
   bool del(key_type key)
   {
-      std::string command = url+"/key/"+key;
+      std::string command = url_+"/key/"+key;
       char *commandc = (char*) command.c_str();
       cout<<commandc<<endl;
 	  if(curl_)
@@ -158,7 +158,7 @@ public:
 
 
   size_type space_used() const{
-      std::string command = url+"/space_used";
+      std::string command = url_+"/space_used";
       char *commandc = (char*) command.c_str();
       Array_t arr_t;
 
@@ -189,7 +189,7 @@ public:
   }
 
   void reset() {
-      std::string command = url+"/reset";
+      std::string command = url_+"/reset";
       char *commandc = (char*) command.c_str();
       if(curl_) {
           CURLcode res;
