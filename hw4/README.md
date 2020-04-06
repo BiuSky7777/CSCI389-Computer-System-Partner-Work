@@ -1,4 +1,12 @@
 # HW 4 Let's Network
+## Overview
+
++ `cache_server.cc`: This file inludes a main function which calls whatever functions it needs to set up a cache, and establish a receiving (TCP) socket. It then loops indefinitely, listening for messages, processing the requests, and returning the appropriate responses.
++ `cache.hh`: Includes a new constructor which establishes a connection with the server.
++ `cache_client.cc`: Cache client object whih holds connection information to access the cache over the network.
++ `test_cache_client.cc`: Same test as hw3 but with cache client object.
+
+Other files stay the same as hw3.
 
 ## Compile and Run
 
@@ -6,15 +14,18 @@
 We use crow(github address: https://github.com/ipkn/crow) to construct the cache_server.cc.
 1. We followed its instruction to download boost.
 2. Due to the version of boost used in crow, we modified the "CSCI389-Computer-System-Partner-Work\crow\include\crow\include\crow\socket.adptors.hh" according to https://git.xmr.pm/wownero/onion-wownero-blockchain-explorer/commit/444effc2878ae714feb9c3087c81b4f2f25975be. (We have included the new crow folders and so there is no need for you to implement this step.)
-3. To run the server, we use the command line:
+3. To run the server, use the command line:
 ```
 g++ -std=c++17 -I../crow/include -Wall -Wextra cache_lib.cc cache_server.cc fifo_evictor.cc -o server -pthread -lboost_system
 ./server 5 11112
 ```
-With one window running, we open another window and give instructions like:
+With one terminal window running, we open another window and input commands like:
 ```
-curl -X Put localhost:11112/keyval/a/apple
+curl -X Put localhost:11112/keyval/`key`/`value`
 curl -I localhost:11112/head
+curl -X GET localhost:11112/key/`key`
+curl -X Post localhost:11112/reset
+curl -X DELETE localhost:11112/key/`key`
 ```
 
 ### Client
@@ -47,4 +58,4 @@ client: g++ -std=c++17 -o client cache_client.cc test_cache_client.cc  -lcurl
 
 Reason:
 We have those failures every time we directly call del/key/<string> (from cache_server.cc) for nonexisted key.
-It always gives us "bus error" and "Segmentation fault", and so we thought the failures are due memory allocation problem which we might not handle in DELETE method in cache_server.cc.
+It gave us "Bus error 10" and "Segmentation fault", so we thought the failures are caused by some memory allocation problems existing in DELETE method in cache_server.cc. This can also be seen when we run `valgrind` on `./server` and `./client`, which showed some exisiting memory leaks.
