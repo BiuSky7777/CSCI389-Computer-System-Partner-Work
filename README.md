@@ -26,7 +26,7 @@ hit rate = 0.809859
 
 Given the above parameters, we get 95 percentile timing: 5.75347ms and mean thoughput: 5.12167ms. Here is our histogram plot:
 
-put plot 1
+![13511587437155_ pic_hd](https://user-images.githubusercontent.com/43858610/79820365-e74dc280-8340-11ea-8faf-c9ae001ca25f.jpg)
 
 
 ## Part 3: Sensitivity testing
@@ -45,11 +45,13 @@ load factor: 0.75
 **compiler: -O3**
 
 -------Result------------------
+
 95 peercentile: 5.79399
 
 mean: 5.15219
 
-put plot 2
+
+![13521587437155_ pic_hd](https://user-images.githubusercontent.com/43858610/79820397-f92f6580-8340-11ea-8318-c4007a586be3.jpg)
 
 + Case2:
 cache's maxmem size: 30000
@@ -67,7 +69,7 @@ compiler: -o
 95 peercentile: 5.72499
 mean: 5.24483
 
-put plot 3
+![13531587437156_ pic_hd](https://user-images.githubusercontent.com/43858610/79820404-ffbddd00-8340-11ea-8370-420406787971.jpg)
 
 + Case3:
 cache's maxmem size: 30000
@@ -85,7 +87,7 @@ compiler: -o
 95 peercentile: 5.76967
 meean: 5.22831
 
-put plot 4
+![13541587437157_ pic_hd](https://user-images.githubusercontent.com/43858610/79820420-08161800-8341-11ea-8701-bb574b4ab2d2.jpg)
 
 + Case4:
 **cache's maxmem size: 300000**
@@ -103,6 +105,6 @@ compiler: -o
 95 peercentile: 5.79056
 meean: 5.36057
 
-put plot 5
+![13551587437158_ pic_hd](https://user-images.githubusercontent.com/43858610/79820431-0ea48f80-8341-11ea-98bf-a58f3cea542f.jpg)
 
 
