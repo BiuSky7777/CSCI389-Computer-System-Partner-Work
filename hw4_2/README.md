@@ -1,4 +1,4 @@
-# HW 4 Let's Network
+# HW 4_2 Let's Network (Improved Version)
 ## Overview
 
 + `cache_server.cc`: This file inludes a main function which calls whatever functions it needs to set up a cache, and establish a receiving (TCP) socket. It then loops indefinitely, listening for messages, processing the requests, and returning the appropriate responses.
@@ -46,16 +46,15 @@ client: g++ -std=c++17 -o client cache_client.cc test_cache_client.cc  -lcurl
 | Set/Get 3 | Check if the value of a nonexisted key is correctly returned by calling `get`.  | Pass |
 | Set/Get 4 | Check if the value of the size of a nonexisted key's value is correctly returned by calling `get`.  | Pass |
 | Del 1 | Check if the selected key is successfully deleted from the cache by calling `del` and the used_space has decreases. | Pass |
-| Del 2 | Check that the selected key cannot be got after the deletion. | Fail |
-| Del 3 | Check that a nonexisted key cannot be deleted. | Fail |
+| Del 2 | Check that the selected key cannot be got after the deletion. | Pass |
+| Del 3 | Check that a nonexisted key cannot be deleted. | Pass |
 | Space_used1 | Check if the initial Cache has 0 space used. | Pass |
 | Space_used2 | Check if Cache has correct space used after setting keys. | Pass |
-| Space_used3 | Check if Cache has correct space used after deleting keys. | Fail |
+| Space_used3 | Check if Cache has correct space used after deleting keys. | Pass |
 | Evict 1 | Check if Cache evicts enough space for newly added key when only one key need to be evicted, and the eviction follows the right order. |  Pass |
 | Evict 2 | Check if Cache evicts enough space for a newly added key when multiple keys need to be evicted, and the eviction follows the right order. |  Pass |
 | Reset 1 | Check if `reset` cleans Cache and gives back 0 used space | Pass |
 | Reset 2 | Check that, after `reset` cleans Cache, no key can be retrieved | Pass |
 
-Reason:
-We have those failures every time we directly call del/key/<string> (from cache_server.cc) for nonexisted key.
-It gave us "Bus error 10" and "Segmentation fault", so we thought the failures are caused by some memory allocation problems existing in DELETE method in cache_server.cc. This can also be seen when we run `valgrind` on `./server` and `./client`, which showed some exisiting memory leaks.
+Improvements: 
+We used to have failures every time we directly call del/key/<string> (from cache_server.cc) for nonexisted key because of existing memory leaks in tthe program. Now the memory leak problem is fixed by correctly adding `curl_easy_cleanup(curl_)` in the cases that we missed.
