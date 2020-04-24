@@ -6,3 +6,4 @@ Collaboration: Kaiyan Shi, Jiarong Li
 + hw3 testy_cache is in branch `test`.
 + hw4 Let's Network is in branch `network`.
 + hw5 Performance Evaluation is in branch `workload`.
++ hw6 Multi-threaded Performance Evaluation is in branch `multithread`.
