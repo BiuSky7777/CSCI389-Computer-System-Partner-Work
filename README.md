@@ -115,3 +115,17 @@ mean: 5.36057
 ![13551587437158_ pic_hd](https://user-images.githubusercontent.com/43858610/79820431-0ea48f80-8341-11ea-98bf-a58f3cea542f.jpg)
 
 + Conclusion: According to the data shown above, there is no significant effect caused by the chosen variations.
+
+## To Run the Code
+
+The default size of server is 10000
+
+First input the following command line to run the server:
+
+`g++ -std=c++17 -I../crow/include -Wall -Wextra cache_lib.cc cache_server.cc fifo_evictor.cc -o server -pthread -lboost_system`
+
+Then, open another terminal window and input the following command line to run workload_generater.cc:
+
+`g++ -std=c++17 workload_generator.cc cache_client.cc -o main.exe -lcurl`
+
+After running the above commands, the user will get a text file including a vector of latencies in milliseconds, which is the data that we used to generate the graph.
