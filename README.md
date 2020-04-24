@@ -43,6 +43,9 @@ Mean Throughput:
 
 + Mean throughput: The saturation point seems to occur at number of threads = 5. The maximum unsaturated throughput is around 5.3 milliseconds.
 
+** Note **
++ The library we use for server is CROW which does not allow us to run 'multithread' with user specifid number of threads. So we just use `app.port(port).multithreaded().run();` in the server, and change number of threads in `workload_generator.cc`, expecting the CROW package can adjust its number of threads internally.
+
 ## To Run the Code
 The default size of server is 10000
 First imput the following commmand line to run the server:
