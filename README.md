@@ -118,8 +118,6 @@ mean: 5.36057
 
 ## To Run the Code
 
-The default size of server is 10000
-
 First input the following command line to run the server:
 
 `g++ -std=c++17 -I../crow/include -Wall -Wextra cache_lib.cc cache_server.cc fifo_evictor.cc -o server -pthread -lboost_system`
